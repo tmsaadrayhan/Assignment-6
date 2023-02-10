@@ -1,9 +1,26 @@
 const imagesArea = document.querySelector('.images');
 const gallery = document.querySelector('.gallery');
 const galleryHeader = document.querySelector('.gallery-header');
+const search = document.getElementById('search');
 const searchBtn = document.getElementById('search-btn');
+const duration = document.getElementById('duration');
 const sliderBtn = document.getElementById('create-slider');
 const sliderContainer = document.getElementById('sliders');
+const selected = document.querySelector('.selected');
+const buffer = document.getElementById('buffer');
+buffer.className= "d-none";
+
+search.addEventListener("keypress", event => {
+  if(event.key==="Enter"){
+    searchBtn.click();
+  }
+})
+
+
+
+let count= 0;
+
+
 // selected image 
 let sliders = [];
 
@@ -13,8 +30,20 @@ let sliders = [];
 // to create your own api key
 const KEY = '15674931-a9d714b6e9d654524df198e00&q';
 
+const selectCount= (count) => {
+  console.log(count);
+  selected.innerHTML= "";
+  selected.className= 'm-3 d-block p-2 text-bg-primary d-flex justify-content-center rounded-4';
+  selected.innerHTML=`<h3>No of images: ${count}</h3>`;
+}
+
 // show images 
+
+
+
 const showImages = (images) => {
+  buffer.className= "d-none";
+
   imagesArea.style.display = 'block';
   gallery.innerHTML = '';
   // show gallery title
@@ -23,28 +52,34 @@ const showImages = (images) => {
     let div = document.createElement('div');
     div.className = 'col-lg-3 col-md-4 col-xs-6 img-item mb-2';
     div.innerHTML = ` <img class="img-fluid img-thumbnail" onclick=selectItem(event,"${image.webformatURL}") src="${image.webformatURL}" alt="${image.tags}">`;
-    gallery.appendChild(div)
+    gallery.appendChild(div);
   })
+  buffer.className= "d-none";
 
 }
 
 const getImages = (query) => {
+  buffer.className= "d-flex justify-content-center";
   fetch(`https://pixabay.com/api/?key=${KEY}=${query}&image_type=photo&pretty=true`)
     .then(response => response.json())
-    .then(data => showImages(data.hitS))
+    .then(data => showImages(data.hits))
     .catch(err => console.log(err))
 }
 
 let slideIndex = 0;
 const selectItem = (event, img) => {
+  
   let element = event.target;
-  element.classList.add('added');
  
   let item = sliders.indexOf(img);
   if (item === -1) {
     sliders.push(img);
+    selectCount(++count);
+    element.classList.add('added');
   } else {
-    alert('Hey, Already added !')
+    sliders= sliders.filter(item=> item != img);
+    element.classList.remove('added');
+    selectCount(--count);
   }
 }
 var timer
@@ -67,7 +102,11 @@ const createSlider = () => {
   document.querySelector('.main').style.display = 'block';
   // hide image aria
   imagesArea.style.display = 'none';
-  const duration = document.getElementById('duration').value || 1000;
+  let duration = document.getElementById('duration').value;
+  if(duration<500) {
+    alert("You can not set values which are less than 500");
+    duration= 500;
+  }
   sliders.forEach(slide => {
     let item = document.createElement('div')
     item.className = "slider-item";
